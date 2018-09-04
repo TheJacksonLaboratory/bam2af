@@ -11,6 +11,7 @@ public class Bam2Af {
 
     public static void main(String args[]) {
         String bamSample="/home/peter/data/chipseq/SRR6350627_sorted.bam";
+        // note--need to make index first: samtools index SRR6350627_sorted.bam
         Bam2Af b2f=new Bam2Af(bamSample);
         b2f.parseBam(bamSample);
     }
@@ -42,7 +43,8 @@ public class Bam2Af {
             // Iterate thorough each record and extract fragment size
             SAMRecord rec= iter.next();
             int tlen= rec.getInferredInsertSize();
-            System.out.println(tlen);
+            Cigar cigar = rec.getCigar();
+            System.out.println(cigar.toString());
         }
 
 
