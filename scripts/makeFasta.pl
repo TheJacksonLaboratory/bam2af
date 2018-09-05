@@ -7,7 +7,7 @@ use IO::File;
 # -- genomeTest.fa (the genome)
 # -- testreads.fastaq (the fake NGS data)
 # index the genome
-#./bwa index -a bwtsw genomeTest.fa 
+
 #2. align the reads
 #./bwa mem -R '@RG\tID:rg1\tSM:NA12878\tPL:illumina\tLB:lib1\tPU:H7AP8ADXX:1:TAAGGCGA' genomeTest.fa testreads.fastq > testreads.sam 
 #3. convert to BAM file
@@ -66,12 +66,15 @@ sub make_read {
     for (my $i=$startpos;$i<$N&&$i<$startpos+$READLEN;$i++) {
 	if ($i==$mutpos1 && $ran < $af1) {
 	   # print "making MUIT\n";
-	   # print substr($seq,$startpos,$READLEN),"\n";
-	    substr($seq,$i,1) = $mut{substr($seq,$i,1)};
-	   # print substr($seq,$startpos,$READLEN),"\n";
+	    # print substr($seq,$startpos,$READLEN),"\n";
+	    my $c=substr($seq,$i,1);
+	    my $m=$mut{$c};
+	    substr($seq,$i,1) = $m;
 	}
 	if ($i==$mutpos2 && $ran < $af2) {
-	    substr($seq,$i,1) = $mut{substr($seq,$i,1)};
+	    my $c=substr($seq,$i,1);
+	    my $m=$mut{$c};
+	    substr($seq,$i,1) = $m;
 	}
     }
     return substr($seq,$startpos,$READLEN);
