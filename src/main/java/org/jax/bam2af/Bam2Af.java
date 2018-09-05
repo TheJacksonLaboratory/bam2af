@@ -10,7 +10,7 @@ public class Bam2Af {
 
 
     public static void main(String args[]) {
-        String bamSample="/home/peter/data/chipseq/SRR6350627_sorted.bam";
+        String bamSample="scripts/sorted_toy_aln.bam";
         // note--need to make index first: samtools index SRR6350627_sorted.bam
         Bam2Af b2f=new Bam2Af(bamSample);
         b2f.parseBam(bamSample);
@@ -37,14 +37,14 @@ public class Bam2Af {
             System.out.println("I got the following: "+ref.getSequenceName());
         }
         // Start iterating from start to end of chr7.
-        SAMRecordIterator iter = reader.query("chr7", 0, 0, false);
+        SAMRecordIterator iter = reader.iterator();    //query("my_chromosome", 0, 0, false);
 
         while(iter.hasNext()){
             // Iterate thorough each record and extract fragment size
             SAMRecord rec= iter.next();
             int tlen= rec.getInferredInsertSize();
             Cigar cigar = rec.getCigar();
-            System.out.println(cigar.toString());
+            System.out.println(cigar.numCigarElements()+ " seq=" + rec.getReadString());
         }
 
 
