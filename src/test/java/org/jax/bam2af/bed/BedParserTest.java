@@ -12,7 +12,7 @@ import static org.junit.Assert.assertEquals;
 public class BedParserTest {
 
     private static BedParser parser;
-    private static List<Interval> gilist;
+    private static List<GenomicInterval> gilist;
 
     @BeforeClass
     public static void setup() throws Bam2AfException {

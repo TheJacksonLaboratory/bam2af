@@ -22,8 +22,8 @@ public class SingleEndBamReaderTest {
         ClassLoader classLoader = SingleEndBamReader.class.getClassLoader();
         String bamFile = classLoader.getResource("bam/sorted_toy_aln.bam").getFile();
         String bedFile = classLoader.getResource("bam/toy_intervals.bed").getFile();
-        seBamReader=new SingleEndBamReader(bamFile, new File(bedFile));
-        my_chromosome_index = seBamReader.getIndexOf("my_chromosome");
+        seBamReader=new SingleEndBamReader(bamFile);
+        my_chromosome_index = 0;
     }
 
     /**

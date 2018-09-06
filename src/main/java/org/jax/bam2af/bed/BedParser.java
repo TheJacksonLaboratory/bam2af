@@ -23,14 +23,10 @@ public class BedParser {
        this.bedFile =new File(bedPath);
     }
 
-    public BedParser(File file) {
-        this.bedFile =file;
-    }
-
 
     /** Parse */
-    public  List<Interval>  parse() throws Bam2AfException {
-        ImmutableList.Builder<Interval> builder = new ImmutableList.Builder<>();
+    public  List<GenomicInterval>  parse() throws Bam2AfException {
+        ImmutableList.Builder<GenomicInterval> builder = new ImmutableList.Builder<>();
         try {
             FileReader fr = new FileReader(this.bedFile);
             BufferedReader br = new BufferedReader(fr);
@@ -48,7 +44,7 @@ public class BedParser {
                 try {
                     int fromPos=Integer.parseInt(A[1])+1; // convert to one-based
                     int toPos=Integer.parseInt(A[2])+1;
-                    Interval gi = new Interval(chrom,fromPos,toPos);
+                    GenomicInterval gi = new GenomicInterval(chrom,fromPos,toPos);
                     builder.add(gi);
                 } catch(NumberFormatException n) {
                     throw new Bam2AfException(String.format("Malformed BED line. Could not parse start pos (%s): %s",A[1],line));
@@ -63,6 +59,7 @@ public class BedParser {
 
 
     /** Parse the BED file and provide an Array of QueryInterval objects -- as needed by the HTSJDK API*/
+    @Deprecated
     public  QueryInterval[]  parse2QueryInterval(Map<String,Integer>chrom2index) throws Bam2AfException {
         List<QueryInterval> queryIntervalsList = new ArrayList<>();
         try {

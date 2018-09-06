@@ -29,15 +29,11 @@ public class SingleEndBamReader {
     private SAMFileHeader samFileHeader;
     private List<SAMSequenceRecord> refSeqs;
 
-    private QueryInterval[] queryIntervals;
-
-    private Map<String,Integer> chromName2IndexMap;
-
     SAMRecordIterator iterator=null;
     boolean iteratorInUse=false;
 
 
-    public SingleEndBamReader(String path, File bedFile) {
+    public SingleEndBamReader(String path) {
         this.bamFilePath = path;
         File bamFile = new File(bamFilePath);
         if (!bamFile.exists()) {
@@ -48,42 +44,9 @@ public class SingleEndBamReader {
             samFileHeader=null;
             return;
         }
-        initSequenceToIndexMap();
-        initQueryIntervalsFromBed(bedFile);
     }
 
 
-
-    private void initSequenceToIndexMap() {
-        initReader();
-        ImmutableMap.Builder<String,Integer> builder = new ImmutableMap.Builder<>();
-        for (SAMSequenceRecord rec : refSeqs) {
-            String name = rec.getSequenceName();
-            int index = rec.getSequenceIndex();
-            builder.put(name,index);
-        }
-        this.chromName2IndexMap=builder.build();
-    }
-
-    private void initQueryIntervalsFromBed(File bedFile) {
-        BedParser parser = new BedParser(bedFile);
-        Objects.requireNonNull(chromName2IndexMap,
-                "Should never happen: Bam file sequence indices not initialized");
-        try {
-            this.queryIntervals = parser.parse2QueryInterval(chromName2IndexMap);
-        } catch (Bam2AfException e) {
-            e.printStackTrace();
-            // todo die gracefully?
-        }
-    }
-
-
-    public int getIndexOf(String chrom) throws Bam2AfException {
-        if (! chromName2IndexMap.containsKey(chrom)) {
-            throw new Bam2AfException("Could not get index for " + chrom);
-        }
-        return chromName2IndexMap.get(chrom);
-    }
 
 
     private void initReader() {
@@ -121,9 +84,9 @@ public class SingleEndBamReader {
 
 
 
-    public final SAMRecordIterator getRecordsInIntervals() {
+    public final SAMRecordIterator getRecordsInInterval(String chrom, int from , int to) {
         initReader();
-        return reader.queryOverlapping(this.queryIntervals);
+        return reader.queryOverlapping(chrom,from,to);
     }
 
 

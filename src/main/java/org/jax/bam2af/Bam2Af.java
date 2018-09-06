@@ -2,6 +2,9 @@ package org.jax.bam2af;
 
 import htsjdk.samtools.*;
 import org.jax.bam2af.bam.SingleEndBamReader;
+import org.jax.bam2af.bed.BedParser;
+import org.jax.bam2af.bed.GenomicInterval;
+import org.jax.bam2af.exception.Bam2AfException;
 
 import java.io.File;
 import java.util.Iterator;
@@ -11,7 +14,9 @@ public class Bam2Af {
 
     private final SingleEndBamReader seBamReader;
 
-    private final File bedFile;
+    private final String bedFilePath;
+
+    private List<GenomicInterval> bedIntervalList;
 
 
     public static void main(String args[]) {
@@ -25,12 +30,32 @@ public class Bam2Af {
 
 
     public Bam2Af(String bamPath,String bedPath){
-        this.bedFile=new File(bedPath);
-        this.seBamReader = new SingleEndBamReader(bamPath, bedFile);
+        this.bedFilePath=bedPath;
+        initBedIntervals();
+        this.seBamReader = new SingleEndBamReader(bamPath);
     }
 
 
+    private void initBedIntervals() {
+        BedParser parser = new BedParser(this.bedFilePath);
+        try {
+            this.bedIntervalList = parser.parse();
+        } catch (Bam2AfException e){
+            e.printStackTrace(); // TODO die gracefully
+        }
+    }
+
+
+
     public void parseBam() {
+        for (GenomicInterval gi : this.bedIntervalList) {
+            String chrom = gi.getChromosome();
+            int from = gi.getFromPosition();
+            int to = gi.getToPosition();
+            SAMRecordIterator iter = seBamReader.getRecordsInInterval(chrom,from,to);
+        }
+
+
         SAMRecordIterator iter = seBamReader.getGlobalIterator();    //query("my_chromosome", 0, 0, false);
 
         while(iter.hasNext()){
