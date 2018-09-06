@@ -18,7 +18,7 @@ if [ ! -e toy_aln.sam ]; then
 fi
 
 if [ ! -e toy_aln.bam ]; then
-    samtools view -Sb testreads.sam >toy_aln.bam
+    samtools view -Sb toy_aln.sam >toy_aln.bam
 fi
 
 if [ ! -e sorted_toy_aln.bam ]; then

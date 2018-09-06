@@ -1,5 +1,6 @@
 package org.jax.bam2af.bed;
 
+import htsjdk.samtools.util.Interval;
 import org.jax.bam2af.exception.Bam2AfException;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -11,7 +12,7 @@ import static org.junit.Assert.assertEquals;
 public class BedParserTest {
 
     private static BedParser parser;
-    private static List<GenomicInterval> gilist;
+    private static List<Interval> gilist;
 
     @BeforeClass
     public static void setup() throws Bam2AfException {

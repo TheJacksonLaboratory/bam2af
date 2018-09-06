@@ -16,7 +16,7 @@ use IO::File;
 # samtools sort testreads.bam >testsorted.bam
 
 
-my $READLEN=10;
+my $READLEN=35;
 
 my $seq= "CCCAATGTCTGTGGATCACGTTATAATGCTTACTGTTGCCCTGGATGGAAAACCTTACCTGGCGGAAATC";
 my $qual="dhhhgchhhghhhfhhhhhdhhhhehhghfhhhchfddffcffafhfghehggfcffdhfehhhhcehdc";
