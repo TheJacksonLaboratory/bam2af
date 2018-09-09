@@ -1,7 +1,13 @@
 package org.jax.bam2af.analysis;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import htsjdk.samtools.*;
 import org.jax.bam2af.exception.Bam2AfException;
+
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * The purpose of this class is to count the alleles present in the columns of an alignment
@@ -11,7 +17,6 @@ import org.jax.bam2af.exception.Bam2AfException;
  */
 public class IntervalAlleleCounter {
 
-    enum Altbase {ALTBASE_A, ALTBASE_C, ALTBASE_G, ALTBASE_T, ALTBASE_N}
 
 
     private final String chromosome;
@@ -21,6 +26,12 @@ public class IntervalAlleleCounter {
     private final int toPosition;
 
     private final ColumnCounter[] columns;
+    /** Key -- genomic position; value: corresponding index in {@link #columns}. */
+    private final Map<Integer,Integer> idx2idxMap;
+    /** A regular expression to break down blocks of the MD field */
+    private final static String MDfieldRegEx = "([A-Z]|\\d+)";
+    /** Pattern used for the MD field. */
+    private final static Pattern MDfieldPattern =  Pattern.compile(MDfieldRegEx);
 
 
     public IntervalAlleleCounter(SAMRecordIterator iter, String chrom, int from, int to) {
@@ -36,6 +47,12 @@ public class IntervalAlleleCounter {
                 e.printStackTrace();
             }
         }
+        ImmutableMap.Builder<Integer,Integer> builder = new ImmutableMap.Builder<>();
+        // relate genomic position to index in columns array
+        for (int i=0, j=from;j<=to;i++,j++) {
+            builder.put(j,i);
+        }
+        this.idx2idxMap=builder.build();
     }
 
 
@@ -50,11 +67,30 @@ public class IntervalAlleleCounter {
         if (cigar == null) {
             throw new SAMException("Cannot create reference from SAMRecord with no CIGAR, read: " + record.getReadName());
         }
+
+        int alignmentstart = record.getAlignmentStart();
+        int alignmentend = record.getAlignmentEnd();
+        int start = record.getStart();
+        int end=record.getEnd();
+        System.out.println("al-start="+alignmentstart+", al-end="+alignmentend +
+            ", start="+start +", end="+end);
+        int numBlocks=record.getAlignmentBlocks().size();
+        System.out.println("Num blocks="+numBlocks);
         int maxOutputLength = 0;
         for (final CigarElement cigarElement : cigar.getCigarElements()) {
             maxOutputLength += cigarElement.getLength();
+            System.out.println(cigarElement.toString() +": "+ cigarElement.getLength());
         }
         System.out.println("len="+maxOutputLength+" MD="+md);
+        Matcher m = MDfieldPattern.matcher(md);
+        if (m.matches()) {
+            int c= m.groupCount();
+            for (int i=0;i<c;i++) {
+                String group = m.group(i);
+                System.out.println("MATHCER="+group);
+            }
+
+        }
     }
 
 
