@@ -2,6 +2,6 @@ package org.jax.bam2af.analysis;
 
 public enum BaseCall {
 
-    REFBASE, ALTBASE_A, ALTBASE_C, ALTBASE_G, ALTBASE_T, ALTBASE_N;
+    REFBASE, ALTBASE_A, ALTBASE_C, ALTBASE_G, ALTBASE_T, ALTBASE_N, ALTBASE_DEL,ALTBASE_INS;
 
 }

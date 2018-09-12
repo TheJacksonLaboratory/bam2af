@@ -28,10 +28,6 @@ public class IntervalAlleleCounter {
     private final ColumnCounter[] columns;
     /** Key -- genomic position; value: corresponding index in {@link #columns}. */
     private final Map<Integer,Integer> idx2idxMap;
-    /** A regular expression to break down blocks of the MD field */
-    private final static String MDfieldRegEx = "([A-Z]|\\d+)";
-    /** Pattern used for the MD field. */
-    private final static Pattern MDfieldPattern =  Pattern.compile(MDfieldRegEx);
 
 
     public IntervalAlleleCounter(SAMRecordIterator iter, String chrom, int from, int to) {
@@ -40,6 +36,16 @@ public class IntervalAlleleCounter {
         toPosition = to;
         int len = to - from + 1;
         columns = new ColumnCounter[len];
+        for (int k=0;k<len;k++) {
+            columns[k]=new ColumnCounter();
+        }
+
+        ImmutableMap.Builder<Integer,Integer> builder = new ImmutableMap.Builder<>();
+        // relate genomic position to index in columns array
+        for (int i=0, j=from;j<=to;i++,j++) {
+            builder.put(j,i);
+        }
+        this.idx2idxMap=builder.build();
         while (iter.hasNext()) {
             try {
                 processRead(iter.next());
@@ -47,12 +53,7 @@ public class IntervalAlleleCounter {
                 e.printStackTrace();
             }
         }
-        ImmutableMap.Builder<Integer,Integer> builder = new ImmutableMap.Builder<>();
-        // relate genomic position to index in columns array
-        for (int i=0, j=from;j<=to;i++,j++) {
-            builder.put(j,i);
-        }
-        this.idx2idxMap=builder.build();
+        debugPrint();
     }
 
 
@@ -70,26 +71,52 @@ public class IntervalAlleleCounter {
 
         int alignmentstart = record.getAlignmentStart();
         int alignmentend = record.getAlignmentEnd();
+        int alignmentLength=alignmentend-alignmentstart+1;
         int start = record.getStart();
         int end=record.getEnd();
         System.out.println("al-start="+alignmentstart+", al-end="+alignmentend +
             ", start="+start +", end="+end);
         int numBlocks=record.getAlignmentBlocks().size();
         System.out.println("Num blocks="+numBlocks);
-        int maxOutputLength = 0;
-        for (final CigarElement cigarElement : cigar.getCigarElements()) {
-            maxOutputLength += cigarElement.getLength();
-            System.out.println(cigarElement.toString() +": "+ cigarElement.getLength());
-        }
-        System.out.println("len="+maxOutputLength+" MD="+md);
-        Matcher m = MDfieldPattern.matcher(md);
-        if (m.matches()) {
-            int c= m.groupCount();
-            for (int i=0;i<c;i++) {
-                String group = m.group(i);
-                System.out.println("MATHCER="+group);
-            }
 
+        BaseCall calls[] = Cigar2MdMatcher.getPositions(cigar,md);
+        if (calls.length != alignmentLength) {
+            System.err.println("Could not process read, lengths were different ? insertion ???");
+            return;
+        }
+        int j=0;
+        for (int i=alignmentstart;i<alignmentend;i++) {
+            if (! idx2idxMap.containsKey(i)) {
+                continue; // outside of range
+            }
+            int idx = idx2idxMap.get(i);
+            switch (calls[j]) {
+                case REFBASE:
+                    columns[idx].ref();
+                    break;
+                case ALTBASE_A:
+                    columns[idx].altbase_A();
+                    break;
+                case ALTBASE_C:
+                    columns[idx].altbase_C();
+                    break;
+                case ALTBASE_G:
+                    columns[idx].altbase_G();
+                    break;
+                case ALTBASE_T:
+                    columns[idx].altbase_T();
+                    break;
+                    // todo deletion, insertion
+
+            }
+        }
+
+    }
+
+    public void debugPrint() {
+        for (int i=0;i<columns.length;i++) {
+            System.out.println("##column "+i);
+            columns[i].debugPrint();
         }
     }
 

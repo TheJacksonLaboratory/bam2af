@@ -1,5 +1,7 @@
 package org.jax.bam2af.analysis;
 
+import com.sun.org.apache.regexp.internal.RE;
+
 public class ColumnCounter {
 
     private final static int REF_INDEX=0;
@@ -37,6 +39,16 @@ public class ColumnCounter {
 
     public void altbase_N() {
         counts[ALTBASE_N_INDEX]++;
+    }
+
+
+    public void debugPrint() {
+        System.out.print("Ref: "+counts[REF_INDEX]);
+        if (counts[ALTBASE_A_INDEX]>0) System.out.print(", ALT_A="+counts[ALTBASE_A_INDEX]);
+        if (counts[ALTBASE_C_INDEX]>0) System.out.print(", ALT_C="+counts[ALTBASE_C_INDEX]);
+        if (counts[ALTBASE_G_INDEX]>0) System.out.print(", ALT_G="+counts[ALTBASE_G_INDEX]);
+        if (counts[ALTBASE_T_INDEX]>0) System.out.print(", ALT_T="+counts[ALTBASE_T_INDEX]);
+        System.out.println();
     }
 
 }
